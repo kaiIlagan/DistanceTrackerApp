@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Jayus/AndroidStudioProjects/DistanceTrackerApp/app/src/main/res/drawable-v24/ic_welcome_image.xml" value="0.289" />
         <entry key="..\:/Users/Jayus/AndroidStudioProjects/DistanceTrackerApp/app/src/main/res/layout/activity_main.xml" value="0.25861195542046606" />
+        <entry key="..\:/Users/Jayus/AndroidStudioProjects/DistanceTrackerApp/app/src/main/res/layout/fragment_permission.xml" value="0.25861195542046606" />
       </map>
     </option>
   </component>
