@@ -44,6 +44,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
 
     private lateinit var map: GoogleMap
 
+    private var startTime = 0L
+    private var stopTime = 0L
+
     private var locationList = mutableListOf<LatLng>()
 
     override fun onCreateView(
@@ -97,6 +100,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                 drawPolyline()
                 followPolyline()
             }
+        }
+        TrackerService.startTime.observe(viewLifecycleOwner) {
+            startTime = it
+        }
+        TrackerService.startTime.observe(viewLifecycleOwner) {
+            stopTime = it
         }
     }
 
