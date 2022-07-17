@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.content.Intent
+import android.location.Location
 import android.os.Build
 import android.os.Looper
 import android.util.Log
@@ -35,6 +36,8 @@ class TrackerService: LifecycleService() {
 
     companion object {
         val started = MutableLiveData<Boolean>()
+
+        val locationList = MutableLiveData<MutableList<LatLng>>()
     }
 
     private val locationCallback = object : LocationCallback(){
@@ -42,8 +45,7 @@ class TrackerService: LifecycleService() {
             super.onLocationResult(result)
             result.locations.let{ locations->
                 for(location in locations){
-                    val newLatLng = LatLng(location.latitude, location.longitude)
-                    Log.d("TrackerService", newLatLng.toString())
+                    updateLocationList(location)
                 }
             }
         }
@@ -51,8 +53,17 @@ class TrackerService: LifecycleService() {
 
     private fun setInitialValues(){
         started.postValue(false)
+
+        locationList.postValue(mutableListOf())
     }
 
+    private fun updateLocationList(location: Location){
+        val newLatLng = LatLng(location.latitude, location.longitude)
+        locationList.value?.apply{
+            add(newLatLng)
+            locationList.postValue(this)
+        }
+    }
     override fun onCreate() {
         setInitialValues()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
