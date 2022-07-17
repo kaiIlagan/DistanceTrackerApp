@@ -1,17 +1,16 @@
-package com.example.distancetrackerapp
+package com.example.distancetrackerapp.ui.maps
 
-import android.content.Context
 import android.content.Intent
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.example.distancetrackerapp.R
 import com.example.distancetrackerapp.databinding.FragmentMapsBinding
 import com.example.distancetrackerapp.service.TrackerService
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_START
@@ -21,15 +20,11 @@ import com.example.distancetrackerapp.util.ExtensionFunctions.show
 import com.example.distancetrackerapp.util.Permissions.hasBackgroundLocationPermission
 import com.example.distancetrackerapp.util.Permissions.requestBackgroundLocationPermission
 
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -63,7 +58,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap!!
+        map = googleMap
         map.isMyLocationEnabled = true
         map.setOnMyLocationButtonClickListener(this)
         map.uiSettings.apply {
@@ -75,6 +70,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
             isScrollGesturesEnabled = false
         }
     }
+
+    //Moved Lambda out of parentheses for Observe Functions
 
     private fun onStartButtonClicked() {
         if(hasBackgroundLocationPermission(requireContext())){
@@ -96,10 +93,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                 val currentSecond = millisUntilFinished / 1000
                 if(currentSecond.toString() == "0"){
                     binding.timerTextView.text = "GO"
-                    binding.timerTextView.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                    binding.timerTextView.setTextColor(ContextCompat.getColor(requireContext(),
+                        R.color.black
+                    ))
                 } else {
                     binding.timerTextView.text = currentSecond.toString()
-                    binding.timerTextView.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
+                    binding.timerTextView.setTextColor(ContextCompat.getColor(requireContext(),
+                        R.color.red
+                    ))
                 }
             }
 
@@ -136,7 +137,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
@@ -156,4 +157,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         super.onDestroyView()
         _binding = null
     }
+
+    // onMarkerClick remove the question
 }
