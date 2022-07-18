@@ -56,6 +56,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
     private var stopTime = 0L
 
     private var locationList = mutableListOf<LatLng>()
+    private var polylineList = mutableListOf<Polyline>()
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
@@ -74,7 +75,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         binding.stopButton.setOnClickListener{
             onStopButtonClicked()
         }
-        binding.resetButton.setOnClickListener{}
+        binding.resetButton.setOnClickListener{
+            onResetButtonClicked()
+        }
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
@@ -121,7 +124,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         TrackerService.startTime.observe(viewLifecycleOwner) {
             startTime = it
         }
-        TrackerService.startTime.observe(viewLifecycleOwner) {
+        TrackerService.stopTime.observe(viewLifecycleOwner) {
             stopTime = it
             if(stopTime != 0L){
                 if(locationList.isNotEmpty()){
@@ -143,6 +146,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                 addAll(locationList)
             }
         )
+        polylineList.add(polyline)
     }
 
     private fun followPolyline(){
@@ -172,6 +176,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         stopForegroundService()
         binding.stopButton.hide()
         binding.startButton.show()
+    }
+
+    private fun onResetButtonClicked() {
+        mapReset()
     }
 
     private fun startCountDown() {
@@ -246,6 +254,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
             binding.stopButton.hide()
             binding.resetButton.show()
         }
+    }
+
+    private fun mapReset(){
+        fusedLocationProviderClient.lastLocation
     }
 
     override fun onMyLocationButtonClick(): Boolean {
