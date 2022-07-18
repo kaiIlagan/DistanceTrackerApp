@@ -257,7 +257,23 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
     }
 
     private fun mapReset(){
-        fusedLocationProviderClient.lastLocation
+        fusedLocationProviderClient.lastLocation.addOnCompleteListener {
+            val lastKnownLocation = LatLng (
+                    it.result.latitude,
+                    it.result.longitude
+                    )
+            for(polyLine in polylineList){
+                polyLine.remove()
+            }
+            map.animateCamera(
+                CameraUpdateFactory.newCameraPosition(
+                    setCameraPosition(lastKnownLocation)
+                )
+            )
+            locationList.clear()
+            binding.resetButton.hide()
+            binding.startButton.show()
+        }
     }
 
     override fun onMyLocationButtonClick(): Boolean {
