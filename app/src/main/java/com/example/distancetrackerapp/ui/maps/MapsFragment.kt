@@ -43,7 +43,7 @@ import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, EasyPermissions.PermissionCallbacks {
+class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMarkerClickListener, EasyPermissions.PermissionCallbacks {
 
     private var _binding: FragmentMapsBinding? = null
     private val binding get() = _binding!!
@@ -57,6 +57,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
 
     private var locationList = mutableListOf<LatLng>()
     private var polylineList = mutableListOf<Polyline>()
+    private var markerList = mutableListOf<Marker>()
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
@@ -95,6 +96,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         map = googleMap
         map.isMyLocationEnabled = true
         map.setOnMyLocationButtonClickListener(this)
+        map.setOnMarkerClickListener(this)
         map.uiSettings.apply {
             isZoomControlsEnabled = false
             isZoomGesturesEnabled = false
@@ -235,6 +237,15 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                     bounds.build(), 100
                 ), 2000, null
             )
+            addMarker(locationList.first())
+            addMarker(locationList.last())
+        }
+    }
+
+    private fun addMarker(position: LatLng){
+        val marker = map.addMarker(MarkerOptions().position(position))
+        if (marker != null) {
+            markerList.add(marker)
         }
     }
 
@@ -262,15 +273,21 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                     it.result.latitude,
                     it.result.longitude
                     )
-            for(polyLine in polylineList){
-                polyLine.remove()
-            }
+
             map.animateCamera(
                 CameraUpdateFactory.newCameraPosition(
                     setCameraPosition(lastKnownLocation)
                 )
             )
+            for(marker in markerList){
+                marker.remove()
+            }
+            for(polyLine in polylineList){
+                polyLine.remove()
+            }
             locationList.clear()
+            polylineList.clear()
+            markerList.clear()
             binding.resetButton.hide()
             binding.startButton.show()
         }
@@ -313,4 +330,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
     }
 
     // onMarkerClick remove the question
+    override fun onMarkerClick(p0: Marker): Boolean {
+        return true
+    }
 }
