@@ -14,9 +14,14 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.distancetrackerapp.R
 import com.example.distancetrackerapp.databinding.FragmentMapsBinding
+import com.example.distancetrackerapp.model.Result
 import com.example.distancetrackerapp.service.TrackerService
+import com.example.distancetrackerapp.ui.maps.MapUtil.calculateElapsedTime
+import com.example.distancetrackerapp.ui.maps.MapUtil.calculateTheDistance
+import com.example.distancetrackerapp.ui.maps.MapUtil.setCameraPosition
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_START
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_STOP
 import com.example.distancetrackerapp.util.ExtensionFunctions.disable
@@ -25,6 +30,8 @@ import com.example.distancetrackerapp.util.ExtensionFunctions.hide
 import com.example.distancetrackerapp.util.ExtensionFunctions.show
 import com.example.distancetrackerapp.util.Permissions.hasBackgroundLocationPermission
 import com.example.distancetrackerapp.util.Permissions.requestBackgroundLocationPermission
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 
 import com.google.android.gms.maps.GoogleMap
@@ -50,6 +57,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
 
     private var locationList = mutableListOf<LatLng>()
 
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,6 +75,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
             onStopButtonClicked()
         }
         binding.resetButton.setOnClickListener{}
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         return binding.root
     }
@@ -113,7 +124,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         TrackerService.startTime.observe(viewLifecycleOwner) {
             stopTime = it
             if(stopTime != 0L){
-                showBiggerPicture()
+                if(locationList.isNotEmpty()){
+                    showBiggerPicture()
+                    displayResults()
+                }
             }
         }
     }
@@ -135,7 +149,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         if(locationList.isNotEmpty()){
             map.animateCamera(
                 (CameraUpdateFactory.newCameraPosition(
-                    MapUtil.setCameraPosition(
+                    setCameraPosition(
                         locationList.last()
                     )
                 )), 1000, null)
@@ -159,8 +173,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         binding.stopButton.hide()
         binding.startButton.show()
     }
-
-
 
     private fun startCountDown() {
         binding.timerTextView.show()
@@ -206,14 +218,34 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
 
     private fun showBiggerPicture() {
         val bounds = LatLngBounds.Builder()
-        for(location in locationList){
-            bounds.include(location)
+        if(locationList.isNotEmpty()) {
+            for (location in locationList) {
+                bounds.include(location)
+            }
+            map.animateCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    bounds.build(), 100
+                ), 2000, null
+            )
         }
-        map.animateCamera(
-            CameraUpdateFactory.newLatLngBounds(
-                bounds.build(), 100
-            ), 2000, null
+    }
+
+    private fun displayResults(){
+        val result = Result(
+            calculateTheDistance(locationList),
+            calculateElapsedTime(startTime, stopTime)
         )
+        lifecycleScope.launch {
+            delay(2500L)
+            val directions = MapsFragmentDirections.actionMapsFragmentToResultFragment(result)
+            findNavController().navigate(directions)
+            binding.startButton.apply {
+                hide()
+                enable()
+            }
+            binding.stopButton.hide()
+            binding.resetButton.show()
+        }
     }
 
     override fun onMyLocationButtonClick(): Boolean {

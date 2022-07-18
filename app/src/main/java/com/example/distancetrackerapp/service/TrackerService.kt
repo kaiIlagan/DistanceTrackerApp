@@ -44,23 +44,24 @@ class TrackerService: LifecycleService() {
         val locationList = MutableLiveData<MutableList<LatLng>>()
     }
 
-    private val locationCallback = object : LocationCallback(){
-        override fun onLocationResult(result: LocationResult) {
-            super.onLocationResult(result)
-            result.locations.let{ locations->
-                for(location in locations){
-                    updateLocationList(location)
-                    updateLocationPeriodically()
-                }
-            }
-        }
-    }
 
     private fun setInitialValues(){
         started.postValue(false)
         startTime.postValue(0L)
         stopTime.postValue(0L)
         locationList.postValue(mutableListOf())
+    }
+
+    private val locationCallback = object : LocationCallback(){
+        override fun onLocationResult(result: LocationResult) {
+            super.onLocationResult(result)
+            result.locations.let{ locations->
+                for(location in locations){
+                    updateLocationList(location)
+                    updateNotificationPeriodically()
+                }
+            }
+        }
     }
 
     private fun updateLocationList(location: Location){
@@ -93,7 +94,6 @@ class TrackerService: LifecycleService() {
         }
         return super.onStartCommand(intent, flags, startId)
     }
-
 
     private fun startForegroundService(){
         createNotificationChannel()
@@ -130,7 +130,7 @@ class TrackerService: LifecycleService() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
 
-    private fun updateLocationPeriodically() {
+    private fun updateNotificationPeriodically() {
         notification.apply {
             setContentTitle("Distance Travelled")
             setContentText(locationList.value?.let { calculateTheDistance(it) } + "km")
