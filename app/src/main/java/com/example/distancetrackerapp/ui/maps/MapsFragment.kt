@@ -236,7 +236,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
             calculateElapsedTime(startTime, stopTime)
         )
         lifecycleScope.launch {
-            delay(2500L)
+            delay(2500)
             val directions = MapsFragmentDirections.actionMapsFragmentToResultFragment(result)
             findNavController().navigate(directions)
             binding.startButton.apply {
